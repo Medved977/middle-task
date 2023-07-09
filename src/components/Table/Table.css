@@ -1,0 +1,53 @@
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sort-asc::after {
+  content: ' ▲';
+}
+
+.sort-desc::after {
+  content: ' ▼';
+}
+
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.filters-block {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+}
+
+.table-row-pointer {
+  cursor: pointer;
+}
+
+.table-row-pointer:hover {
+  color: #008000;
+}

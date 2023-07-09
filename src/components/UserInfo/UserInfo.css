@@ -1,0 +1,9 @@
+.userInfo-block {
+  margin-bottom: 10px;
+}
+
+.userInfo-label {
+  display: inline-block;
+  width: 80px;
+  font-weight: bold;
+}

@@ -1,0 +1,15 @@
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.filters-block {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+}

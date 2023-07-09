@@ -1,2 +1,5 @@
-# middle-task
+### middle-task
+
+### `npm start`
+
 for getLabSample
