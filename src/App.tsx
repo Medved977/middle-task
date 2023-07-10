@@ -5,7 +5,7 @@ import { useEffect, useState, ChangeEvent } from 'react';
 
 import { getUsers } from './api/users';
 import { Users, IUser } from './types/User';
-import { TableColumns } from './types/common';
+import { TableColumns, TableRow } from './types/common';
 
 import Table from './components/Table/Table';
 import Modal from './components/Modal/Modal';
@@ -13,20 +13,22 @@ import UserInfo from './components/UserInfo/UserInfo';
 
 
 interface IFilters {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 const columns: TableColumns = [
-  { key: 'id', label: 'id', clickable: true },
-  { key: 'firstName', label: 'firstName', clickable: true },
-  { key: 'lastName', label: 'lastName', clickable: true },
-  { key: 'email', label: 'email' },
-  { key: 'age', label: 'age' },
-  { key: 'gender', label: 'gender' },
+  { key: 'id', label: 'id', filterType: 'includes', clickable: true },
+  { key: 'firstName', label: 'firstName', filterType: 'includes', clickable: true },
+  { key: 'lastName', label: 'lastName', filterType: 'includes', clickable: true },
+  { key: 'email', label: 'email', filterType: 'includes' },
+  { key: 'gender', label: 'gender', filterType: 'equality' },
+  { key: 'age', label: 'age', filterType: 'range' },
 ]
 
 function App() {
   const [usersData, setUsersData] = useState<Users | null>(null);
+  const [filteredData, setFilteredData] = useState<Users | null>(null);
+
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [isUsersLoading, setIsUsersLoading] = useState<Boolean>(true);
 
@@ -37,8 +39,11 @@ function App() {
     firstName: '',
     lastName: '',
     email: '',
-    age: '',
     gender: '',
+    age: {
+      start: '',
+      end: '',
+    },
   })
 
   useEffect(() => {
@@ -51,18 +56,119 @@ function App() {
       })
   }, [])
 
+  useEffect(() => {
+    if (!usersData) return;
+
+    const getDataWithFilters = (data: Users, filters: IFilters): Users => {
+      const isEveryFiltersEmpty = Object.values(filters).every(filter => {
+        if (typeof filter === 'string') {
+          return !filter;
+        } else if (typeof filter === 'object') {
+          return Object.values(filter).every(filter => !filter)
+        }
+
+        return true;
+      })
+
+      if (isEveryFiltersEmpty) {
+        return data;
+      }
+
+      return data.filter(row => {
+        let isValid = true;
+
+        for (let key in filters) {
+          if (!filters[key]) continue;
+
+          const filterType = columns.find(col => col.key === key)?.filterType;
+
+          if (filterType === 'includes') {
+            const invalidIncludes = !row[key as keyof IUser].toLowerCase().includes(filters[key].toLowerCase());
+
+            if (invalidIncludes) {
+              isValid = false;
+            }
+          }
+
+          if (filterType === 'equality') {
+            const invalidEquality = row[key as keyof IUser] !== filters[key];
+
+            if (invalidEquality) {
+              isValid = false;
+            }
+          }
+
+
+          if (filterType === 'range') {
+            const start = filters[key].start;
+            const end = filters[key].end;
+
+            if (!start && !end) {
+              continue;
+            }
+
+            if (start && !end) {
+              const inRange = +start <= +row[key as keyof IUser];
+
+              if (!inRange) {
+                isValid = false;
+                continue;
+              }
+
+            }
+
+            if (!start && end) {
+              const inRange = +row[key as keyof IUser] <= +end;
+
+              if (!inRange) {
+                isValid = false;
+                continue;
+              }
+            }
+
+            if (start && end) {
+              const inRange = +start <= +row[key as keyof IUser] && +row[key as keyof IUser] <= +end;
+
+              if (!inRange) {
+                isValid = false;
+              }
+            }
+          }
+        }
+
+        return isValid;
+      })
+    }
+
+    const data = getDataWithFilters(usersData, filters);
+
+    setFilteredData(data);
+
+  }, [filters, usersData])
+
+
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedUser(null);
   }
 
-  const onRowClick = (user: IUser) => {
-    setSelectedUser(user);
+  const onRowClick = (row: TableRow) => {
+    setSelectedUser(row as IUser);
     setIsModalVisible(true);
   }
 
   const onFiltersChange = (e: ChangeEvent<HTMLInputElement>, key: string) => {
     setFilters({ ...filters, [key]: e.target.value })
+  }
+
+  const onRangeChanged = (e: ChangeEvent<HTMLInputElement>, key: string, range: string) => {
+    setFilters({
+      ...filters,
+      [key]: {
+        ...filters[key],
+        [range]: e.target.value,
+      }
+    })
   }
 
   const Filters = (
@@ -93,20 +199,28 @@ function App() {
             type="text"
           />
           <input
-            value={filters.age}
+            value={filters.id}
             className="filter-input"
-            onChange={(e) => onFiltersChange(e, 'age')}
-            placeholder="enter age"
+            onChange={(e) => onFiltersChange(e, 'id')}
+            placeholder="enter id"
             type="text"
           />
         </div>
 
         <div className="mb-10 filters-block">
           <input
-            value={filters.id}
+            value={filters.age.start}
             className="filter-input"
-            onChange={(e) => onFiltersChange(e, 'id')}
-            placeholder="enter id"
+            onChange={(e) => onRangeChanged(e, 'age', 'start')}
+            placeholder="enter start age"
+            type="text"
+          />
+
+          <input
+            value={filters.age.end}
+            className="filter-input"
+            onChange={(e) => onRangeChanged(e, 'age', 'end')}
+            placeholder="enter end age"
             type="text"
           />
         </div>
@@ -148,7 +262,7 @@ function App() {
             {Filters}
           </div>
 
-          <Table data={usersData} columns={columns} onRowClick={onRowClick} />
+          <Table columns={columns} data={filteredData} onRowClick={onRowClick} />
 
           {selectedUser ?
             <Modal isVisible={isModalVisible} onClose={handleCloseModal}>

@@ -1,15 +1,11 @@
 import './Table.css';
 import React, { useState, useMemo } from 'react';
-
-import { IUser, Users } from '../../types/User';
-import { TableColumns } from '../../types/common';
-
+import { TableColumns, TableRow, TableData  } from '../../types/common';
 
 interface ITableProps {
   columns: TableColumns,
-  data: Users | null,
-  // FIXME: Здесь не должно быть упоминания юзеров, т.к. таблица не привязана к сущности
-  onRowClick: (row: IUser) => void;
+  data: TableData | null,
+  onRowClick: (row: TableRow) => void;
 }
 
 const Table = ({ columns, data, onRowClick }: ITableProps) => {
@@ -37,11 +33,11 @@ const Table = ({ columns, data, onRowClick }: ITableProps) => {
     const { key, direction } = sortConfig;
 
     return [...data].sort((a, b) => {
-      if (a[key as keyof IUser] < b[key as keyof IUser]) {
+      if (a[key] < b[key]) {
         return direction === 'asc' ? -1 : 1;
       }
 
-      if (a[key as keyof IUser] > b[key as keyof IUser]) {
+      if (a[key] > b[key]) {
         return direction === 'asc' ? 1 : -1;
       }
 
@@ -50,7 +46,7 @@ const Table = ({ columns, data, onRowClick }: ITableProps) => {
 
   }, [data, sortConfig])
 
-  const rowClickHandler = (row: IUser, clickable: Boolean) => {
+  const rowClickHandler = (row: TableRow, clickable: Boolean) => {
     if (!clickable) return;
 
     onRowClick(row)
@@ -78,7 +74,7 @@ const Table = ({ columns, data, onRowClick }: ITableProps) => {
             {sortedData.map((row) => (
               <tr key={row.id}>
                 {columns.map((column) => (
-                  <td onClick={() => { rowClickHandler(row, !!column.clickable) }} className={`${column.clickable ? 'table-row-pointer' : ''}`} key={column.key}>{row[column.key as keyof IUser]}</td>
+                  <td onClick={() => { rowClickHandler(row, !!column.clickable) }} className={`${column.clickable ? 'table-row-pointer' : ''}`} key={column.key}>{row[column.key]}</td>
                 ))}
               </tr>
             ))}
