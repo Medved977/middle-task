@@ -5,6 +5,7 @@ export interface IUser {
   email: string;
   age: string;
   gender: string;
+  [key: string]: string | number;
 }
 
 export type Users = IUser[];

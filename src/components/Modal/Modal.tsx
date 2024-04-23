@@ -1,5 +1,5 @@
-import './Modal.css';
-import React from 'react';
+import "./Modal.css";
+import React from "react";
 
 interface ModalProps {
   isVisible: Boolean;
@@ -13,13 +13,15 @@ const Modal = ({ isVisible, onClose, children }: ModalProps) => {
       {isVisible && (
         <div className="modal">
           <div className="modal-content">
-            <button onClick={onClose} className="close-btn">X</button>
+            <button onClick={onClose} className="close-btn">
+              X
+            </button>
             {children}
           </div>
         </div>
       )}
     </React.Fragment>
-  )
-}
+  );
+};
 
-export default Modal
+export default Modal;

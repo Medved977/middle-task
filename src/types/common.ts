@@ -1,3 +1,5 @@
+import { IUser } from "./User";
+
 interface ITableColumn {
   key: string;
   label: string;
@@ -7,6 +9,6 @@ interface ITableColumn {
 
 export type TableColumns = ITableColumn[];
 
-export type TableRow = Record<string, any>;
+export type TableRow = IUser;
 
 export type TableData = TableRow[];
